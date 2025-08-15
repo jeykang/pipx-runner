@@ -13,7 +13,7 @@ docker run --rm \
 
 ## Environment variables
 
-- `PIPX_PACKAGES` — Packages to install (e.g. `httpie black==24.4.2 'yt-dlp[rtmp]'`).
+- `PIPX_PACKAGES` — Packages to install, whitespace-separated (e.g. `httpie black==24.4.2 'yt-dlp[rtmp]'`).
 
 - `PIPX_PACKAGES_FILE` — File path (inside container) with newline-separated specs.
 
