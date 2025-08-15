@@ -14,7 +14,7 @@ set -Eeuo pipefail
 if ! (mkdir -p "${PIPX_BIN_DIR}" && test -w "${PIPX_BIN_DIR}"); then
   export PIPX_BIN_DIR="${HOME}/.local/bin"
   mkdir -p "${PIPX_BIN_DIR}"
-  export PATH="${PIPX_BIN_DIR}:${PATH}"
+  export PATH="${PIPX_HOME}/bin:${PIPX_BIN_DIR}:${PATH}"
 fi
 
 # Collect packages from env and/or file
