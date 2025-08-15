@@ -4,7 +4,7 @@ FROM python:3.12-slim
 # Environment defaults; can be overridden at runtime
 ENV PIPX_HOME=/opt/pipx \
     PIPX_BIN_DIR=/usr/local/bin \
-    PATH="/usr/local/bin:${PATH}" \
+    PATH="${PIPX_HOME}/bin:/usr/local/bin:${PATH}" \
     PIPX_PACKAGES="" \
     PIPX_PACKAGES_FILE="" \
     PIPX_FORCE=0
@@ -22,7 +22,7 @@ COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # Persist pipx venvs by default (recommended)
-VOLUME ["/opt/pipx"]
+VOLUME ["${PIPX_HOME}"]
 
 # Use tini to forward signals and reap zombies
 ENTRYPOINT ["/usr/bin/tini","--","/usr/local/bin/entrypoint.sh"]
