@@ -3,7 +3,7 @@ set -Eeuo pipefail
 
 # Defaults (can be overridden at runtime)
 : "${PIPX_HOME:=/opt/pipx}"
-: "${PIPX_BIN_DIR:=/usr/local/bin}"
+: "${PIPX_BIN_DIR:=/opt/pipx/bin}"
 : "${PIPX_PACKAGES:=}"      # whitespace/newline-separated list ONLY
 : "${PIPX_PACKAGES_FILE:=}" # path inside container, newline-separated (comments ok)
 : "${PIPX_FORCE:=0}"        # 0 = install if missing, 1 = force (upgrade/reinstall)
@@ -14,7 +14,7 @@ set -Eeuo pipefail
 if ! (mkdir -p "${PIPX_BIN_DIR}" && test -w "${PIPX_BIN_DIR}"); then
   export PIPX_BIN_DIR="${HOME}/.local/bin"
   mkdir -p "${PIPX_BIN_DIR}"
-  export PATH="${PIPX_HOME}/bin:${PIPX_BIN_DIR}:${PATH}"
+  export PATH="${PIPX_BIN_DIR}:${PATH}"
 fi
 
 # Collect packages from env and/or file

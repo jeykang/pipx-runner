@@ -26,4 +26,4 @@ docker run --rm \
 
 - `PIPX_HOME` — Where pipx stores venvs (default `/opt/pipx`). If you want your venvs to persist, you can map `PIPX_HOME` to some location on your host machine.
 
-- `PIPX_BIN_DIR` — Where console scripts go (default `/usr/local/bin`). The entrypoint will fall back to `~/.local/bin` if it cannot write here (e.g., when running as non-root).
+- `PIPX_BIN_DIR` — Where console scripts go (default `/opt/pipx/bin`). The entrypoint will fall back to `~/.local/bin` if it cannot write here (e.g., when running as non-root).

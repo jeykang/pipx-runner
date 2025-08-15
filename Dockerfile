@@ -3,7 +3,7 @@ FROM python:3.12-slim
 
 # Environment defaults; can be overridden at runtime
 ENV PIPX_HOME=/opt/pipx \
-    PIPX_BIN_DIR=/usr/local/bin \
+    PIPX_BIN_DIR=/opt/pipx/bin \
     PATH="/opt/pipx/bin:/usr/local/bin:${PATH}" \
     PIPX_PACKAGES="" \
     PIPX_PACKAGES_FILE="" \
