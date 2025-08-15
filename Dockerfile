@@ -6,12 +6,13 @@ ENV PIPX_HOME=/opt/pipx \
     PIPX_BIN_DIR=/usr/local/bin \
     PATH="/usr/local/bin:${PATH}" \
     PIPX_PACKAGES="" \
-    PIPX_PACKAGES_FILE=""
+    PIPX_PACKAGES_FILE="" \
+    PIPX_FORCE=0
 
-# Install run-time essentials and pipx
+# Install run-time essentials, tini (as PID 1), and pipx
 RUN --mount=type=cache,target=/var/cache/apt \
     apt-get update && apt-get install -y --no-install-recommends \
-      ca-certificates \
+      ca-certificates tini \
     && rm -rf /var/lib/apt/lists/* \
     && pip install --no-cache-dir pipx \
     && pipx --version
@@ -20,9 +21,11 @@ RUN --mount=type=cache,target=/var/cache/apt \
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-# Persist pipx venvs by default (optional but recommended)
+# Persist pipx venvs by default (recommended)
 VOLUME ["/opt/pipx"]
 
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-# Default to an interactive shell if the user doesn't pass a command
-CMD ["bash"]
+# Use tini to forward signals and reap zombies
+ENTRYPOINT ["/usr/bin/tini","--","/usr/local/bin/entrypoint.sh"]
+
+# Default command: keep container alive so you can docker exec into it
+CMD ["sleep","infinity"]

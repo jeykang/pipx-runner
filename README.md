@@ -1,15 +1,16 @@
 # pipx-runner
 
-A minimal container that installs [`pipx`](https://pipx.pypa.io) and, at startup, installs any Python CLI tools you specify via environment variables. Installed console scripts are added to `PATH`, so you can invoke them directly with `docker run`.
+A minimal container that installs [`pipx`](https://pipx.pypa.io) and, at startup, installs any Python CLI tools you specify via environment variables. Installed console scripts are added to `PATH`, so you can invoke them directly with `docker exec`.
 
 ## Quick start
 
 ```bash
 docker run --rm \
   -e PIPX_PACKAGES="httpie black==24.4.2" \
-  ghcr.io/jeykang/pipx-runner:latest http --version
+  ghcr.io/jeykang/pipx-runner:latest
 ```
 
+`docker exec pipx-runner http --version`
 
 ## Environment variables
 

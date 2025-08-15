@@ -6,7 +6,7 @@ set -Eeuo pipefail
 : "${PIPX_BIN_DIR:=/usr/local/bin}"
 : "${PIPX_PACKAGES:=}"      # whitespace/newline-separated list ONLY
 : "${PIPX_PACKAGES_FILE:=}" # path inside container, newline-separated (comments ok)
-: "${PIPX_FORCE:=1}"
+: "${PIPX_FORCE:=0}"        # 0 = install if missing, 1 = force (upgrade/reinstall)
 : "${PIPX_INSTALL_ARGS:=}"  # e.g., --python python3.12
 : "${PIPX_PIP_ARGS:=}"      # e.g., --index-url https://mirror/simple
 
@@ -20,21 +20,20 @@ fi
 # Collect packages from env and/or file
 packages=()
 
-# NOTE: We intentionally split ONLY on whitespace/newlines to preserve commas in
-# PEP 508 extras (pkg[foo,bar]) and version ranges (>=1.0,<2).
+# We split ONLY on whitespace/newlines to preserve commas in extras (pkg[foo,bar])
+# and in version ranges (>=1.0,<2).
 if [[ -n "${PIPX_PACKAGES}" ]]; then
-  # Use default IFS (space, tab, newline) to split into an array
-  # shellcheck disable=SC2206 # we want word splitting here by design
+  # shellcheck disable=SC2206 # intentional word splitting on IFS
   from_env=( ${PIPX_PACKAGES} )
   packages+=("${from_env[@]}")
 fi
 
 if [[ -n "${PIPX_PACKAGES_FILE}" && -f "${PIPX_PACKAGES_FILE}" ]]; then
   while IFS= read -r line; do
-    # Trim leading/trailing whitespace
+    # Trim
     line="${line#"${line%%[![:space:]]*}"}"
     line="${line%"${line##*[![:space:]]}"}"
-    # skip empty or comment lines
+    # Skip empty or comment lines
     [[ -z "$line" || "$line" =~ ^# ]] && continue
     packages+=("$line")
   done < "${PIPX_PACKAGES_FILE}"
@@ -51,6 +50,7 @@ for p in "${packages[@]:-}"; do
   fi
 done
 
+# Install if requested
 if [[ "${#unique_packages[@]}" -gt 0 ]]; then
   echo "[pipx-runner] Installing ${#unique_packages[@]} package(s) via pipx..."
   install_args=()
@@ -62,7 +62,12 @@ if [[ "${#unique_packages[@]}" -gt 0 ]]; then
     if [[ "${PIPX_FORCE}" == "1" ]]; then
       pipx install "${install_args[@]}" "${pip_args[@]}" --force "${spec}"
     else
-      pipx install "${install_args[@]}" "${pip_args[@]}" "${spec}"
+      # Install if missing; otherwise skip
+      if ! pipx list --short | awk '{print $1}' | grep -Fxq -- "$(printf '%s\n' "$spec" | sed 's/\[.*//; s/==.*//; s/>=.*//; s/<.*//')"; then
+        pipx install "${install_args[@]}" "${pip_args[@]}" "${spec}"
+      else
+        echo "[pipx-runner] Already present: ${spec} (skipping; set PIPX_FORCE=1 to upgrade/reinstall)"
+      fi
     fi
   done
 fi
@@ -70,8 +75,5 @@ fi
 echo "[pipx-runner] PATH=${PATH}"
 pipx --version || true
 
-if [[ "$#" -eq 0 ]]; then
-  exec bash
-else
-  exec "$@"
-fi
+# Always exec the container's CMD (default: sleep infinity) or any overridden command
+exec "$@"
